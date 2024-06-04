@@ -1,0 +1,38 @@
+from pyspark.sql import SparkSession
+from pyspark.sql.types import StructType, StructField, IntegerType, FloatType
+
+spark = SparkSession.builder \
+	.appName("Transactions Examples") \
+	.getOrCreate()
+
+schema = StructType([
+	StructField(name: "user_id", IntegerType(), nullable: True),
+	StructField(name: "transaction_id", IntegerType(), nullable: True),
+	StructField(name: "amount", FloatType(), nullable: True),
+	StructField(name: "date", StringType(), nullable: True),
+])
+
+data_path = "transactions.txt"
+
+df = spark.read.csv(data_path, schema=schema, sep=",",header=False)
+
+total_transactions = df.count()
+print(total_transactions)
+
+total_amount = df.agg({"amount": "sum"}).collect()[0][0]
+print(total_amount)
+
+avg_amount = df.agg({"amount": "avg"}).collect()[0][0]
+print(avg_amount)
+
+max = df.agg({"amount": "max"}).collect()[0][0]
+print(max)
+
+min = df.agg({"amount": "min"}).collect()[0][0]
+print(min)
+
+uniq = df.select ("user_id").distinct().count()
+print(uniq)
+
+user_trans = df.groupby("user_id").count().orderBy("count")
+print(user_trans)
